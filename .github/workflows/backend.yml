@@ -1,0 +1,42 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Källkodsutcheckning
+        uses: actions/checkout@v4
+
+      - name: Konfigurera Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Installera beroenden
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Validera att servern startar
+        run: |
+          cd backend
+          python -c "import main; print('Backend importerades utan fel!')"
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigga Webhook Deploy
+        run: |
+          # Om du har en deploy-hook URL från Render/Koyeb kan du anropa den här:
+          # curl -X POST "${{ secrets.BACKEND_DEPLOY_HOOK_URL }}"
+          echo "Backend verifierad. Koppla din host-tjänst (t.ex. Render/Koyeb) direkt till GitHub för automatisk deploy!"
