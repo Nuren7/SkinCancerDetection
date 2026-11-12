@@ -1,128 +1,81 @@
 # SkinCancerDetection
-An MVP under development for image analysis of skin lesions. The project will allow users to upload an image, send it for analysis via an external AI service, and view the results along with their analysis history.
 
-> **Important:** This service is not a medical diagnostic tool. Results must not replace an assessment by professional healthcare providers. The current codebase is a skeleton; the analysis workflow and backend functions are not yet implemented.
+A web application for uploading a skin-lesion image and viewing classification results returned by an image-analysis service. The app includes a responsive upload and results flow, confidence scores, and recent analysis history saved in the current browser.
 
-## Status
-The project currently contains an initial frontend and backend structure, as well as GitHub Actions workflows. The functionality for image uploading, AI analysis, database integration, storage, and history logs has yet to be implemented.
+> **Medical disclaimer:** This project is for informational and educational use only. It is not a medical device and cannot diagnose skin cancer. Model output is not medical advice and must not replace evaluation by a qualified healthcare professional. Consult a clinician about any skin concern.
 
-## Planned Architecture
-The backend is designed to be lightweight, orchestrating requests to an externally hosted model instead of loading a heavy AI model locally. This minimizes memory consumption and fits the planned free-tier hosting with limited resources.
+## Features
+
+- Upload or drag and drop a JPG, PNG, or WebP image (up to 10 MB).
+- Preview the selected image before submitting it for analysis.
+- Display classification labels and model confidence scores.
+- Review up to 20 recent analyses saved in browser local storage.
+- Upload images to Supabase Storage and request predictions from the Hugging Face Inference API through the backend.
+- Show actionable errors when the API cannot be reached or returns an unusable response.
+
+Analysis history is stored only in the browser that created it; it is not synchronized between devices or saved in the database.
+
+## Architecture
 
 ```text
 Browser
- │
- ▼
- React + TypeScript (Vite) ── Vercel
- │
- API Requests
- ▼
- Python + FastAPI ─────────── Render
- ├── Hugging Face Inference API (Image Analysis)
- ├── Neon Postgres (Analysis Metadata & History)
- └── Supabase Storage (Images)
+  React + TypeScript + Vite
+       │ POST /analyze (multipart image)
+       ▼
+  FastAPI backend
+       ├── Supabase Storage (uploaded image)
+       └── Hugging Face Inference API (classification)
 ```
 
-### Tech Stack
+## Technology
 
-| Component | Technology | Planned Usage |
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS
+- **Frontend hosting:** Vercel
+- **Backend:** Python, FastAPI, SQLAlchemy, hosted on Render
+- **Database:** Neon Postgres
+- **Image storage:** Supabase Storage
+- **Image analysis:** Hugging Face Inference API
+
+## Live deployment
+
+The application is deployed at **[skin-cancer-detection-opal.vercel.app](https://skin-cancer-detection-opal.vercel.app/)**.
+
+| Service | Provider | Purpose |
 |---|---|---|
-| Frontend | React, TypeScript, and Vite | Interface for uploading, results, and history |
-| Frontend Hosting | Vercel | Deployment of the web app |
-| Backend | Python and FastAPI | API and orchestration of external services |
-| Backend Hosting | Render | Hosting of the low-memory API service |
-| Database | Neon Postgres | Metadata and analysis history |
-| AI | Hugging Face Inference API | Externally hosted image analysis model |
-| Image Storage | Supabase Storage | Storage for uploaded images |
-| CI/CD | GitHub Actions | Automated checks upon pushing to `main` |
+| Frontend | Vercel | Hosts the web application |
+| Backend API | Render | Runs the FastAPI service |
+| Database | Neon | Provides the Postgres database |
+| Image storage | Supabase | Stores uploaded images |
+| Image analysis | Hugging Face | Returns classification results |
 
-*Service free tiers and limitations are subject to change. Please verify the current terms with each provider before production deployment.*
+Render deployment configuration is maintained in `backend/render.yaml`. Analysis history currently remains in the user's browser; analysis records are not yet persisted to Neon.
 
-## Project Structure
+## Run locally
 
-```text
-SkinCancerDetection/
- ├── .github/
- │ └── workflows/
- │ ├── backend.yml
- │ └── frontend.yml
- ├── backend/
- │ ├── .env.example
- │ ├── .gitignore
- │ ├── main.py
- │ ├── requirements.txt
- │ └── app/
- │ ├── __init__.py
- │ ├── ai.py
- │ ├── database.py
- │ └── storage.py
- ├── frontend/
- │ ├── .gitignore
- │ ├── eslint.config.js
- │ ├── index.html
- │ ├── package.json
- │ ├── package-lock.json
- │ ├── postcss.config.js
- │ ├── tailwind.config.js
- │ ├── tsconfig.app.json
- │ ├── tsconfig.json
- │ ├── tsconfig.node.json
- │ ├── vite.config.ts
- │ ├── public/
- │ │ ├── favicon.svg
- │ │ └── icons.svg
- │ └── src/
- │ ├── App.css
- │ ├── App.tsx
- │ ├── index.css
- │ ├── main.tsx
- │ ├── assets/
- │ │ ├── hero.png
- │ │ ├── react.svg
- │ │ └── vite.svg
- │ ├── components/
- │ │ ├── AnalysisResult.tsx
- │ │ ├── Disclaimer.tsx
- │ │ ├── HistoryList.tsx
- │ │ └── ImageUploader.tsx
- │ ├── services/
- │ │ └── api.ts
- │ └── types/
- │ └── index.ts
- └── README.md
+### Prerequisites
+
+- Python 3.10 or later
+- Node.js and npm
+- Supabase project with a `skin-images` storage bucket
+- Hugging Face inference endpoint and access token
+
+### Backend
+
+Create `backend/.env` with the configuration values below. Keep this file and all credentials private.
+
+```dotenv
+HF_API_URL=https://your-inference-endpoint
+HF_TOKEN=your-hugging-face-token
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-supabase-key
+DATABASE_URL=your-database-connection-string
 ```
 
-*This structure illustrates the existing project files, but the functionality within these files is not yet complete. Virtual environments, installed packages, and local `.env` files are excluded from the tree.*
+The database connection is initialized by the backend, but analysis records are not currently written to it. The frontend stores recent history locally instead.
 
-## CI/CD
-GitHub Actions workflows are configured in `.github/workflows/`:
-- `frontend.yml` triggers on pushes to `main` containing changes within the `frontend/` directory. It installs locked npm dependencies and builds the frontend using `npm run build`.
-- `backend.yml` triggers on pushes to `main` containing changes within the `backend/` directory. It installs Python dependencies and verifies that `main` can be successfully imported.
-
-The CI validation checks are fully configured. The backend `deploy` job is currently a placeholder that only logs a message; automated deployment requires setting up a Render/Koyeb deploy hook or configuring the native GitHub integration. The frontend workflow builds the app but does not automatically publish it to Vercel.
-
-## Development Plan
-1. **Setup:** Configure Neon, Hugging Face, and Supabase, and add secrets to their respective hosting platforms.
-2. **Backend:** Implement FastAPI endpoints, validation, database connection, and Inference API calls.
-3. **Frontend:** Implement image uploading, the results view, and the history log.
-4. **Integration:** Connect the frontend and backend, implement error handling, and test the entire workflow.
-5. **Deployment:** Configure Vercel and Render, then verify environment variables and production settings.
-
-## Environment Variables and Secrets
-The local configuration for the backend is based on `backend/.env.example`. Configure these values in a local `.env` file or as environment variables in your hosting provider's dashboard. **Never commit API keys, database passwords, or other secrets to Git.**
-
-## Getting Started
-The backend `main.py` and the frontend application are currently under development, meaning the project cannot be fully executed yet. Once the codebases are in place, you can run the development commands from their respective directories:
+Install dependencies and start the API:
 
 ```powershell
-# Frontend
-cd frontend
-npm ci
-npm run dev
-```
-
-```powershell
-# Backend
 cd backend
 python -m venv .venv
 .venv\Scripts\Activate.ps1
@@ -130,4 +83,49 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-*The backend execution command assumes that `main.py` initializes the FastAPI instance as `app`.*
+The API is available at `http://localhost:8000`; its health endpoint is `GET /`.
+
+### Frontend
+
+Optionally create `frontend/.env.local` to point the app to a non-default API URL:
+
+```dotenv
+VITE_API_URL=http://localhost:8000
+```
+
+Install dependencies and start the development server:
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+Open the local URL printed by Vite. To create a production build, run `npm run build`; run `npm run lint` to check the frontend.
+
+## API
+
+### `POST /analyze`
+
+Accepts a multipart form upload with a `file` field. On success, the response includes the uploaded image URL and the inference result:
+
+```json
+{
+  "status": "success",
+  "image_url": "https://...",
+  "analysis": [
+    { "label": "example_class", "score": 0.92 }
+  ]
+}
+```
+
+The frontend accepts predictions returned as an array or under a `predictions` or `results` property, with each prediction containing a string `label` and numeric `score` (or `confidence`).
+
+## Current limitations
+
+- Results and history are informational; there is no medical review or diagnosis.
+- Analysis history is browser-local and limited to the latest 20 results.
+- Database sessions are configured, but analysis records are not persisted to the database.
+- The backend currently accepts uploaded file content without server-side type or size validation; client-side limits are not a security boundary.
+- Verify the Hugging Face authorization configuration in `backend/app/ai.py` before deployment: the token is loaded from the environment, but the outgoing request currently uses a placeholder authorization value.
+- Configure and verify the Supabase bucket's access policy for the intended deployment.
