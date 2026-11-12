@@ -7,6 +7,7 @@ load_dotenv()
 
 #hg AI
 HF_API_URL = os.getenv("HF_API_URL")
+print(f"DEBUG URL: '{HF_API_URL}'")
 HF_API_KEY = os.getenv("HF_TOKEN")
 
 def analyze_image_with_hf(image_bytes: bytes) -> dict:
