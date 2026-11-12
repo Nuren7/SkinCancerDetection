@@ -30,6 +30,6 @@ def upload_image_to_supabase(file_bytes: bytes, file_name: str) -> str:
       public_url_response = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
       
       return public_url_response
-    exept Exception as e:
+    except Exception as e:
       print(f"Error uploading image to Supabase: {e}")
       return None
