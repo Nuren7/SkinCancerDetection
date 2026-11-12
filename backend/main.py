@@ -15,6 +15,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/")
+def read_root():
+    return {"message": "Skin Cancer Detection API is running successfully!"}
+
+
 @app.post("/analyze")
 async def analyze_skin_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """
