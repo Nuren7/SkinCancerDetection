@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 #load env 
 load_dotenv()
 
-#hg ai 
+#hg AI
 HF_API_URL = "https://api-inference.huggingface.co/models/google/vit-base-patch16-224"
 HF_API_KEY = os.getenv("HF_TOKEN")
 
