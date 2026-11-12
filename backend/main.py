@@ -1,4 +1,4 @@
-from fastapi import FastAPI, uploadFile, File, depends
+from fastapi import FastAPI, uploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.database import get_db
