@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 #hg AI
-HF_API_URL = "https://api-inference.huggingface.co/models/google/vit-base-patch16-224"
+HF_API_URL = os.getenv("HF_API_URL")
 HF_API_KEY = os.getenv("HF_TOKEN")
 
 def analyze_image_with_hf(image_bytes: bytes) -> dict:
