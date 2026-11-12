@@ -24,16 +24,22 @@ def upload_image_to_supabase(file_bytes: bytes, file_name: str) -> str:
         return None
     
     try:
-        # upload to bucket
+        # upload to bucket with upsert=True to allow overwriting files with the same name
         response = supabase.storage.from_(BUCKET_NAME).upload(
-            path=file_name, file=file_bytes,
-            file_options={"content_type": "image/jpeg"}
+            path=file_name, 
+            file=file_bytes,
+            file_options={"content_type": "image/jpeg", "upsert": "true"}
         )
         
-        # get the url of the uploaded image
-        public_url_response = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
+        # get the url of the uploaded image safely (handling both dict and string return types)
+        public_url_res = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
         
-        return public_url_response
+        if isinstance(public_url_res, dict):
+            public_url = public_url_res.get("publicUrl") or public_url_res.get("publicURL")
+        else:
+            public_url = public_url_res
+            
+        return public_url
     except Exception as e:
         print(f"Error uploading image to Supabase: {e}")
         return None
