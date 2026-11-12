@@ -5,3 +5,4 @@ httpx==0.27.2
 sqlalchemy
 psycopg[binary]
 python-multipart==0.0.12
+supabase
