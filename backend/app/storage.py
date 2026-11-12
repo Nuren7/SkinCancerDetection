@@ -10,6 +10,11 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 BUCKET_NAME = "skin-images"
 
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
+
 #crate supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
