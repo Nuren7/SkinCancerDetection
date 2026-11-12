@@ -21,6 +21,9 @@ def analyze_image_with_hf(image_bytes: bytes) -> dict:
     
     response = requests.post(HF_API_URL, headers=headers, data=image_bytes)
     
+    print(f"HF Status Code: {response.status_code}")
+    print(f"HF Raw Response: {response.text}")
+    
     if response.status_code != 200:
         return {"error": "Could not process picture via Hugging Face", "details": response.text}
     
